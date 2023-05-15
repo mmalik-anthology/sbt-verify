@@ -60,7 +60,20 @@ object VerifyID {
 
   private def toOrganization(path: String, projectBase: String): String = {
     inIvyCache(path, ivyCacheOrganization(path, _))
+      .orElse(inCoursierCache(path, coursierCacheOrganization(path, _)))
       .getOrElse(Paths.get(projectBase).relativize(Paths.get(path)).toString)
+  }
+
+  private def inCoursierCache(path: String, in: Int => String): Option[String] = {
+    val coursierCacheDir: String = s"Coursier${File.separator}v1${File.separator}"
+    path.lastIndexOf(coursierCacheDir) match {
+      case -1 => None
+      case x: Int => Some(in(x + coursierCacheDir.length))
+    }
+  }
+
+  private def coursierCacheOrganization(path: String, x: Int): String = {
+    path.substring(x)
   }
 
   private def toName(path: String, filename: String): String = {
